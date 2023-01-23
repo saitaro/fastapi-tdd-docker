@@ -1,0 +1,4 @@
+__pycache__
+env
+*.lock
+*.code-workspace
