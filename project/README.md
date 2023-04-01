@@ -1,0 +1,1 @@
+A simple text summarization service build with FastAPI.
