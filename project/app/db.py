@@ -24,7 +24,7 @@ def init_db(app: FastAPI) -> None:
         app,
         db_url=os.environ.get('DATABASE_URL'),
         modules={'models': ['app.models.tortoise']},
-        generate_schemas=False,
+        generate_schemas=True,
         add_exception_handlers=True,
     )
 
@@ -35,10 +35,10 @@ async def generate_schemas() -> None:
         db_url=os.environ.get('DATABASE_URL'),
         modules={'models': ['models.tortoise']},
     )
-    logger.info("Generating database schemas via Tortoise...")
+    logger.info('Generating database schemas via Tortoise...')
     await Tortoise.generate_schemas()
     await Tortoise.close_connections()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     run_async(generate_schemas())
