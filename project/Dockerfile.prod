@@ -2,8 +2,14 @@
 FROM python:3.10.8-slim-buster
 
 # set working directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /home/app \
+    # create the app user
+    && addgroup --system app && adduser --system --group app
+
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -22,12 +28,14 @@ RUN pip install poetry \
     && poetry config virtualenvs.create false \
     && poetry install 
 
-# add 
+# add app
 COPY . .
 
-# add entrypoint.sh
-COPY ./entrypoint.sh .
-RUN chmod +x /usr/src/app/entrypoint.sh
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
 
-# run entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+# change to the app user
+USER app
+
+# run gunicorn
+CMD gunicorn --bind 0.0.0.0:$PORT app.main:app -k uvicorn.workers.UvicornWorker
