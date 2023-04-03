@@ -6,14 +6,15 @@
 	],
 	"settings": {
 		"terminal.integrated.cwd": "./project",
+		"djangointellisense.projectRoot": ".",
+		"python.defaultInterpreterPath": "./project/.venv/bin/python",
 		"python.terminal.activateEnvironment": true,
 		"python.terminal.activateEnvInCurrentTerminal": true,
-		"python.defaultInterpreterPath": "./project/.venv/bin/python3",
 		"[python]": {
 			"editor.defaultFormatter": "ms-python.black-formatter",
 		},
 		"black-formatter.path": [
-			"${workspaceFolder}/project/.venv/bin/blue",
+			"./project/.venv/bin/blue",
 		],
 		"editor.formatOnSave": true,
 		"editor.formatOnSaveMode": "file",
