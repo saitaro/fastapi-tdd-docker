@@ -1,6 +1,6 @@
-from tortoise.models import Model
-from tortoise.fields import TextField, DatetimeField
 from tortoise.contrib.pydantic import pydantic_model_creator
+from tortoise.fields import DatetimeField, TextField
+from tortoise.models import Model
 
 
 class TextSummary(Model):

@@ -3,3 +3,5 @@ Dockerfile
 Dockerfile.prod
 poetry.lock
 .venv
+*.coverage
+htmlcov

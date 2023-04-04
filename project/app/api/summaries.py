@@ -1,10 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api import crud
-from app.models.pydantic import (
-    SummaryPayloadSchema,
-    SummaryResponseSchema,
-)
+from app.models.pydantic import SummaryPayloadSchema, SummaryResponseSchema
 from app.models.tortoise import SummarySchema
 
 router = APIRouter()
