@@ -1,5 +1,4 @@
 __pycache__
-*.lock
 *.code-workspace
 .venv
 *.pytest_cache

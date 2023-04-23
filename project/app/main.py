@@ -10,7 +10,7 @@ logger = logging.getLogger('uvicorn')
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(ping.router)
+    app.include_router(ping.router, prefix='/ping')
     app.include_router(summaries.router, prefix='/summaries', tags=['summaries'])
 
     return app
