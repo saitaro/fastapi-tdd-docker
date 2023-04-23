@@ -28,7 +28,7 @@ jobs:
             --tag ${{ env.IMAGE }}:latest \
             --file ./project/Dockerfile.prod \
             "./project"
-      - name: Push image 2
+      - name: Push image
         run: |
           docker push ${{ env.IMAGE }}:latest
 
