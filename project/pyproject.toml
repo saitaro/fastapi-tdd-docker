@@ -29,6 +29,10 @@ tortoise_orm = "app.db.TORTOISE_ORM"
 location = "./migrations"
 src_folder = "./."
 
+[tool.blue]
+line-length = 88
+target-version = ["py310"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
