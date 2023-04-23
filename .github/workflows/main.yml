@@ -3,7 +3,7 @@ name: Continuous Integration and Delivery
 on: [push]
 
 env:
-  IMAGE: ghcr.io/saitaro/fastapi-tdd-docker/summarizer
+  IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
 
 jobs:
   build:
@@ -30,7 +30,6 @@ jobs:
             "./project"
       - name: Push image
         run: |
-          docker login ghcr.io -u saitaro -p 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 &&
           docker push ${{ env.IMAGE }}:latest
 
   test:
