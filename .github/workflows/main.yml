@@ -72,3 +72,12 @@ jobs:
         run: docker exec fastapi-tdd python -m flake8 .
       - name: blue
         run: docker exec fastapi-tdd python -m blue . --check
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    environment: render
+    needs: [build, test]
+    steps:
+      - name: Start deploy to Render.com
+        run: curl ${{ secrets.DEPLOY_HOOK }}
