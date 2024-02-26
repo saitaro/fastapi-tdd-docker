@@ -2,11 +2,13 @@ import json
 
 from starlette.testclient import TestClient
 
+"""
+docker-compose exec web python -m pytest tests/summaries_test.py
+"""
+
 
 def test_create_summary(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
+    response = test_app_with_db.post('/summaries/', data=json.dumps({'url': 'https://foo.bar'}))
     assert response.status_code == 201
     assert response.json()['url'] == 'https://foo.bar'
 
@@ -26,9 +28,7 @@ def test_create_summary_invalid_json(test_app: TestClient):
 
 
 def test_read_summary(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
+    response = test_app_with_db.post('/summaries/', data=json.dumps({'url': 'https://foo.bar'}))
     summary_id = response.json()['id']
     response = test_app_with_db.get(f'/summaries/{summary_id}')
     assert response.status_code == 200
@@ -47,9 +47,7 @@ def test_read_summary_wrong_id(test_app_with_db: TestClient):
 
 
 def test_read_all_summaries(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
+    response = test_app_with_db.post('/summaries/', data=json.dumps({'url': 'https://foo.bar'}))
     summary_id = response.json()['id']
     response = test_app_with_db.get('/summaries/')
     assert response.status_code == 200

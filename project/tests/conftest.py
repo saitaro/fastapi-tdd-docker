@@ -7,6 +7,10 @@ from tortoise.contrib.fastapi import register_tortoise
 from app.config import Settings, get_settings
 from app.main import create_app
 
+"""
+docker-compose exec web python -m pytest tests/conftest.py
+"""
+
 
 def get_settings_override():
     return Settings(testing=1, database_url=os.environ.get('DATABASE_TEST_URL'))

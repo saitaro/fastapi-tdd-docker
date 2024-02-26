@@ -1,5 +1,9 @@
 from starlette.testclient import TestClient
 
+"""
+docker-compose exec web python -m pytest tests/ping_test.py
+"""
+
 
 def test_ping(test_app: TestClient):
     response = test_app.get('/ping')
