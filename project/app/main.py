@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -8,8 +9,18 @@ from .db import init_db
 logger = logging.getLogger('uvicorn')
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info('Starting up...')
+    init_db(app)
+
+    yield
+
+    logger.info('Shutting down...')
+
+
 def create_app() -> FastAPI:
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
     app.include_router(ping.router, prefix='/ping')
     app.include_router(summaries.router, prefix='/summaries', tags=['summaries'])
 
@@ -17,14 +28,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
-
-@app.on_event('startup')
-async def startup_event():
-    logger.info('Starting up...')
-    init_db(app)
-
-
-@app.on_event('shutdown')
-async def shutdown_event():
-    logger.info('Shutting down...')
