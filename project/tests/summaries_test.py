@@ -7,20 +7,22 @@ docker-compose exec web python -m pytest tests/summaries_test.py -vv
 """
 
 
-def get_missing_payload(body_field: str) -> dict:
+def get_missing_payload(body_field: str, detail_input: dict | None = None) -> dict:
     return dict(
-        type='value_error.missing',
+        input=detail_input or {},
+        type='missing',
         loc=['body', body_field],
-        msg='field required',
+        msg='Field required',
+        url='https://errors.pydantic.dev/2.6/v/missing',
     )
 
 
 def test_create_summary(test_app_with_db: TestClient):
     response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
+        '/summaries/', data=json.dumps({'url': 'https://foo.bar.com'})
     )
     assert response.status_code == 201
-    assert response.json()['url'] == 'https://foo.bar'
+    assert response.json()['url'] == 'https://foo.bar.com/'
 
 
 def test_create_summary_invalid_json(test_app_with_db: TestClient):
@@ -32,7 +34,10 @@ def test_create_summary_invalid_json(test_app_with_db: TestClient):
     response = test_app_with_db.post('/summaries/', data=json.dumps({'url': 'sdfsd'}))
 
     assert response.status_code == 422
-    assert response.json()['detail'][0]['msg'] == 'invalid or missing URL scheme'
+    assert (
+        response.json()['detail'][0]['msg']
+        == 'Input should be a valid URL, relative URL without a base'
+    )
 
 
 def test_read_summary(test_app_with_db: TestClient):
@@ -45,7 +50,7 @@ def test_read_summary(test_app_with_db: TestClient):
 
     response_body = response.json()
     assert response_body['id'] == summary_id
-    assert response_body['url'] == 'https://foo.bar'
+    assert response_body['url'] == 'https://foo.bar/'
     assert response_body['summary']
     assert response_body['created_at']
 
@@ -62,10 +67,12 @@ def test_read_summary_wrong_id(test_app_with_db: TestClient):
     assert response.json() == {
         'detail': [
             {
-                'ctx': {'limit_value': 0},
+                'input': '0',
+                'ctx': {'gt': 0},
                 'loc': ['path', 'summary_id'],
-                'msg': 'ensure this value is greater than 0',
-                'type': 'value_error.number.not_gt',
+                'msg': 'Input should be greater than 0',
+                'type': 'greater_than',
+                'url': 'https://errors.pydantic.dev/2.6/v/greater_than',
             }
         ]
     }
@@ -93,7 +100,7 @@ def test_remove_summary(test_app_with_db: TestClient):
     response = test_app_with_db.delete(f'/summaries/{summary_id}')
 
     assert response.status_code == 200
-    assert response.json() == {'id': summary_id, 'url': 'https://foo.bar'}
+    assert response.json() == {'id': summary_id, 'url': 'https://foo.bar/'}
 
 
 def test_remove_summary_incorrect_id(test_app_with_db: TestClient):
@@ -115,7 +122,7 @@ def test_update_summary(test_app_with_db: TestClient):
     )
     assert response.status_code == 200
     assert response.json()['id'] == summary_id
-    assert response.json()['url'] == 'https://foo.bar'
+    assert response.json()['url'] == 'https://foo.bar/'
     assert response.json()['summary'] == 'updated!'
     assert response.json()['created_at']
 
@@ -135,10 +142,12 @@ def test_update_summary(test_app_with_db: TestClient):
             422,
             [
                 {
-                    'type': 'value_error.number.not_gt',
+                    'input': '0',
+                    'ctx': {'gt': 0},
+                    'type': 'greater_than',
                     'loc': ['path', 'summary_id'],
-                    'msg': 'ensure this value is greater than 0',
-                    'ctx': {'limit_value': 0},
+                    'msg': 'Input should be greater than 0',
+                    'url': 'https://errors.pydantic.dev/2.6/v/greater_than',
                 }
             ],
         ],
@@ -156,7 +165,7 @@ def test_update_summary(test_app_with_db: TestClient):
             {'url': 'https://foo.bar'},
             422,
             [
-                get_missing_payload('summary'),
+                get_missing_payload('summary', detail_input={'url': 'https://foo.bar'}),
             ],
         ],
     ],

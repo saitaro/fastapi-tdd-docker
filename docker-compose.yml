@@ -10,7 +10,7 @@ services:
       - 8000:8000
     environment:
       - ENVIRONMENT=dev
-      - TESTING=false
+      - TESTING=0
       - DATABASE_URL=asyncpg://postgres:postgres@web-db:5432/web_dev
       - DATABASE_TEST_URL=asyncpg://postgres:postgres@web-db:5432/web_test
     depends_on:

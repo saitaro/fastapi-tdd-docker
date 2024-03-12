@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.10.8-slim-buster
+FROM python:3.11.8-slim
 
 # set working directory
 RUN mkdir -p /usr/src/app
@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install system dependencies
 RUN apt-get update \
-    && apt-get -y install netcat gcc postgresql \
+    && apt-get -y install netcat-traditional gcc postgresql \
     && apt-get clean
 
 # install python dependencies
