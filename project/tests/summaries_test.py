@@ -179,3 +179,15 @@ def test_update_summary_invalid(
     )
     assert response.status_code == status_code
     assert response.json()['detail'] == detail
+
+
+# saitaro/fastapi-docker-tdd
+
+
+# ghcr.io/saitaro/fastapi-docker-tdd/summarizer
+
+
+# docker build --cache-from ghcr.io/saitaro/fastapi-docker-tdd/summarizer:latest --tag ghcr.io/saitaro/fastapi-docker-tdd/summarizer:latest --file ./project/Dockerfile.prod "./project"
+
+
+# docker run -d --name fastapi-tdd-docker -e PORT=8765 -e ENVIRONMENT=dev -e DATABASE_URL=sqlite://sqlite.db -e DATABASE_TEST_URL=sqlite://sqlite.db -p 5003:8765 ghcr.io/saitaro/fastapi-docker-tdd/summarizer:latest
