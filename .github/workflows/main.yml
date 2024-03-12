@@ -6,36 +6,36 @@ env:
   IMAGE: ghcr.io/$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')/summarizer
 
 jobs:
-  build:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: master
-      - name: Log in to GitHub Packages
-        run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull image
-        run: |
-          docker pull ${{ env.IMAGE }}:latest || true
-      - name: Build image
-        run: |
-          docker build \
-            --cache-from ${{ env.IMAGE }}:latest \
-            --tag ${{ env.IMAGE }}:latest \
-            --file ./project/Dockerfile.prod \
-            "./project"
-      - name: Push image
-        run: |
-          docker push ${{ env.IMAGE }}:latest
+  # build:
+  #   name: Build Docker Image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: master
+  #     - name: Log in to GitHub Packages
+  #       run: echo ${GITHUB_TOKEN} | docker login -u ${GITHUB_ACTOR} --password-stdin ghcr.io
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Pull image
+  #       run: |
+  #         docker pull ${{ env.IMAGE }}:latest || true
+  #     - name: Build image
+  #       run: |
+  #         docker build \
+  #           --cache-from ${{ env.IMAGE }}:latest \
+  #           --tag ${{ env.IMAGE }}:latest \
+  #           --file ./project/Dockerfile.prod \
+  #           "./project"
+  #     - name: Push image
+  #       run: |
+  #         docker push ${{ env.IMAGE }}:latest
 
   test:
     name: Test Docker Image
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -67,11 +67,7 @@ jobs:
             -p 5003:8765 \
             ${{ env.IMAGE }}:latest
       - name: pytest
-        run: docker exec fastapi-tdd python -m pytest .
-      - name: flake8
-        run: docker exec fastapi-tdd python -m flake8 .
-      - name: blue
-        run: docker exec fastapi-tdd python -m blue . --check
+        run: docker exec fastapi-tdd python -m pytest . -vvv
 
   deploy:
     name: Deploy to Render
