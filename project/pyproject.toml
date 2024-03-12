@@ -42,3 +42,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.isort]
+split_on_trailing_comma = true
+line_length = 88
