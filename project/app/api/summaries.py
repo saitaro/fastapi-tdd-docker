@@ -1,20 +1,23 @@
 from fastapi import APIRouter, HTTPException, Path
 
 from app.api import crud
-from app.models.pydantic import (SummaryPayloadSchema, SummaryResponseSchema,
-                                 SummaryUpdatePayloadSchema)
+from app.models.pydantic import (
+    SummaryPayloadSchema,
+    SummaryResponseSchema,
+    SummaryUpdatePayloadSchema,
+)
 from app.models.tortoise import SummarySchema
 
 router = APIRouter()
 
 
 @router.get('/', response_model=list[SummarySchema])
-async def read_all_summaries():
+async def get_all_summaries():
     return await crud.read_all()
 
 
 @router.get('/{summary_id}', response_model=SummarySchema)
-async def read_summary(summary_id: int = Path(gt=0)):
+async def get_summary(summary_id: int = Path(gt=0)):
     if summary := await crud.read(summary_id):
         return summary
     else:

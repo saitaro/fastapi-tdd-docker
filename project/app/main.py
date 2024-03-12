@@ -27,8 +27,8 @@ async def main_lifespan(app: FastAPI):
     await connections.close_all()
 
 
-def create_app(test_lifespan: AsyncContextManager | None = None) -> FastAPI:
-    app = FastAPI(lifespan=test_lifespan or main_lifespan)
+def create_app(lifespan: AsyncContextManager = main_lifespan) -> FastAPI:
+    app = FastAPI(lifespan=lifespan)
     app.include_router(ping.router, prefix='/ping')
     app.include_router(summaries.router, prefix='/summaries', tags=['summaries'])
 

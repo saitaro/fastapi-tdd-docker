@@ -67,11 +67,11 @@ jobs:
             -p 5003:8765 \
             ${{ env.IMAGE }}:latest
       - name: pytest
-        run: docker exec fastapi-tdd-docker python -m pytest . -vvv
+        run: docker exec fastapi-tdd-docker pytest -k "not unit" -vvv
       - name: flake8
         run: docker exec fastapi-tdd-docker python -m flake8 .
       - name: blue
-        run: docker exec fastapi-tdd-docker python -m blue .
+        run: docker exec fastapi-tdd-docker blue .
 
   deploy:
     name: Deploy to Render

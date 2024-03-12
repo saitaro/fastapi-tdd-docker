@@ -2,8 +2,10 @@ import orjson as json
 import pytest
 from starlette.testclient import TestClient
 
+from app.api import crud
+
 """
-docker-compose exec web pytest tests/summaries_test.py -vvv
+docker-compose exec web pytest -k "unit" -n auto
 """
 
 
@@ -17,12 +19,17 @@ def get_missing_payload(body_field: str, detail_input: dict | None = None) -> di
     )
 
 
-def test_create_summary(test_app_with_db: TestClient):
+def test_create_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    async def create_mock(payload):
+        return 1
+
+    monkeypatch.setattr(crud, 'create', create_mock)
+
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar.com'})
     )
     assert response.status_code == 201
-    assert response.json()['url'] == 'https://foo.bar.com/'
+    assert response.json() == {'id': 1, 'url': 'https://foo.bar.com/'}
 
 
 def test_create_summary_invalid_json(test_app_with_db: TestClient):
@@ -40,22 +47,33 @@ def test_create_summary_invalid_json(test_app_with_db: TestClient):
     )
 
 
-def test_get_summary(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
-    summary_id = response.json()['id']
-    response = test_app_with_db.get(f'/summaries/{summary_id}')
+def test_get_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    test_data = {
+        'id': 1,
+        'url': 'https://foo.bar/',
+        'summary': 'summary',
+        'created_at': '2022-01-01T00:00:00',
+    }
+
+    async def read_mock(summary_id):
+        return test_data
+
+    monkeypatch.setattr(crud, 'read', read_mock)
+
+    response = test_app_with_db.get('/summaries/1')
+
     assert response.status_code == 200
-
-    response_body = response.json()
-    assert response_body['id'] == summary_id
-    assert response_body['url'] == 'https://foo.bar/'
-    assert response_body['summary']
-    assert response_body['created_at']
+    assert response.json() == test_data
 
 
-def test_get_summary_wrong_id(test_app_with_db: TestClient):
+def test_get_summary_wrong_id(
+    test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    async def read_mock(summary_id):
+        return None
+
+    monkeypatch.setattr(crud, 'read', read_mock)
+
     response = test_app_with_db.get('/summaries/666')
 
     assert response.status_code == 404
@@ -78,53 +96,95 @@ def test_get_summary_wrong_id(test_app_with_db: TestClient):
     }
 
 
-def test_get_all_summaries(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
-    summary_id = response.json()['id']
+def test_get_all_summaries(
+    test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    test_data = [
+        {
+            'id': 1,
+            'url': 'https://foo.bar/',
+            'summary': 'summary',
+            'created_at': '2022-01-01T00:00:00',
+        },
+        {
+            'id': 2,
+            'url': 'https://testdriven.io/',
+            'summary': 'summary',
+            'created_at': '2025-02-17T00:00:00',
+        },
+    ]
+
+    async def read_all_mock():
+        return test_data
+
+    monkeypatch.setattr(crud, 'read_all', read_all_mock)
+
     response = test_app_with_db.get('/summaries/')
 
     assert response.status_code == 200
-
-    response_list = response.json()
-
-    assert len(tuple(filter(lambda text: text['id'] == summary_id, response_list))) == 1
+    assert response.json() == test_data
 
 
-def test_remove_summary(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
-    summary_id = response.json()['id']
-    response = test_app_with_db.delete(f'/summaries/{summary_id}')
+def test_remove_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    async def read_mock(summary_id):
+        return {
+            'id': 7,
+            'url': 'https://foo.bar/',
+            'summary': 'summary',
+            'created_at': '2022-01-01',
+        }
+
+    monkeypatch.setattr(crud, 'read', read_mock)
+
+    delete_test_data = {
+        'id': 7,
+        'url': 'https://foo.bar/',
+    }
+
+    async def delete_mock(summary_id):
+        return summary_id
+
+    monkeypatch.setattr(crud, 'delete', delete_mock)
+
+    response = test_app_with_db.delete('/summaries/7')
 
     assert response.status_code == 200
-    assert response.json() == {'id': summary_id, 'url': 'https://foo.bar/'}
+    assert response.json() == delete_test_data
 
 
-def test_remove_summary_incorrect_id(test_app_with_db: TestClient):
+def test_remove_summary_incorrect_id(
+    test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    async def delete_mock(summary_id):
+        return None
+
+    monkeypatch.setattr(crud, 'delete', delete_mock)
+
     response = test_app_with_db.delete('/summaries/666')
 
     assert response.status_code == 404
     assert response.json()['detail'] == 'Summary not found'
 
 
-def test_update_summary(test_app_with_db: TestClient):
-    response = test_app_with_db.post(
-        '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
-    )
-    summary_id = response.json()['id']
+def test_update_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    update_test_data = {
+        'id': 7,
+        'url': 'https://foo.bar/',
+        'summary': 'summary',
+        'created_at': '2022-01-01T00:00:00',
+    }
+
+    async def update_mock(summary_id, payload):
+        return update_test_data
+
+    monkeypatch.setattr(crud, 'update', update_mock)
 
     response = test_app_with_db.put(
-        f'/summaries/{summary_id}',
-        data=json.dumps({'url': 'https://foo.bar', 'summary': 'updated!'}),
+        '/summaries/7',
+        data=json.dumps({'url': 'https://test.com', 'summary': 'updated!'}),
     )
     assert response.status_code == 200
-    assert response.json()['id'] == summary_id
-    assert response.json()['url'] == 'https://foo.bar/'
-    assert response.json()['summary'] == 'updated!'
-    assert response.json()['created_at']
+    assert response.json() == update_test_data
 
 
 @pytest.mark.parametrize(
@@ -176,7 +236,13 @@ def test_update_summary_invalid(
     payload: dict,
     status_code: int,
     detail: str | list | dict,
+    monkeypatch: pytest.MonkeyPatch,
 ):
+    async def update_mock(summary_id, payload):
+        return None
+
+    monkeypatch.setattr(crud, 'update', update_mock)
+
     response = test_app_with_db.put(
         f'/summaries/{summary_id}',
         data=json.dumps(payload),

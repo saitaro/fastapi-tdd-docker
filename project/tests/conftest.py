@@ -9,10 +9,6 @@ from tortoise import Tortoise, connections
 from app.config import Settings, get_settings
 from app.main import create_app
 
-"""
-docker-compose exec web python -m pytest tests/conftest.py
-"""
-
 
 def get_settings_override():
     return Settings(testing=1, database_url=os.environ.get('DATABASE_TEST_URL'))
@@ -46,7 +42,7 @@ async def test_lifespan(app: FastAPI):
 
 @pytest.fixture(scope='module')
 def test_app_with_db():
-    app = create_app(test_lifespan=test_lifespan)
+    app = create_app(lifespan=test_lifespan)
     app.dependency_overrides[get_settings] = get_settings_override
 
     with TestClient(app) as test_client:
