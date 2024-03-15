@@ -18,5 +18,4 @@ async def generate_summary(summary_id, url: str):
     finally:
         article.nlp()
 
-    await asyncio.sleep(3)
     await TextSummary.filter(id=summary_id).update(summary=article.summary)
