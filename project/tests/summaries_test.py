@@ -2,9 +2,15 @@ import orjson as json
 import pytest
 from starlette.testclient import TestClient
 
+from app.api import summaries
+
 """
 docker-compose exec web pytest tests/summaries_test.py -vvv
 """
+
+
+async def generate_summary_mock(summary_id, url):
+    return None
 
 
 def get_missing_payload(body_field: str, detail_input: dict | None = None) -> dict:
@@ -17,7 +23,8 @@ def get_missing_payload(body_field: str, detail_input: dict | None = None) -> di
     )
 
 
-def test_create_summary(test_app_with_db: TestClient):
+def test_create_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(summaries, 'generate_summary', generate_summary_mock)
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar.com'})
     )
@@ -40,7 +47,8 @@ def test_create_summary_invalid_json(test_app_with_db: TestClient):
     )
 
 
-def test_get_summary(test_app_with_db: TestClient):
+def test_get_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(summaries, 'generate_summary', generate_summary_mock)
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
     )
@@ -51,7 +59,6 @@ def test_get_summary(test_app_with_db: TestClient):
     response_body = response.json()
     assert response_body['id'] == summary_id
     assert response_body['url'] == 'https://foo.bar/'
-    assert response_body['summary']
     assert response_body['created_at']
 
 
@@ -78,7 +85,10 @@ def test_get_summary_wrong_id(test_app_with_db: TestClient):
     }
 
 
-def test_get_all_summaries(test_app_with_db: TestClient):
+def test_get_all_summaries(
+    test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(summaries, 'generate_summary', generate_summary_mock)
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
     )
@@ -92,7 +102,8 @@ def test_get_all_summaries(test_app_with_db: TestClient):
     assert len(tuple(filter(lambda text: text['id'] == summary_id, response_list))) == 1
 
 
-def test_remove_summary(test_app_with_db: TestClient):
+def test_remove_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(summaries, 'generate_summary', generate_summary_mock)
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
     )
@@ -110,7 +121,8 @@ def test_remove_summary_incorrect_id(test_app_with_db: TestClient):
     assert response.json()['detail'] == 'Summary not found'
 
 
-def test_update_summary(test_app_with_db: TestClient):
+def test_update_summary(test_app_with_db: TestClient, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(summaries, 'generate_summary', generate_summary_mock)
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar'})
     )

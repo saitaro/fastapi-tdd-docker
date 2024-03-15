@@ -2,7 +2,7 @@ import orjson as json
 import pytest
 from starlette.testclient import TestClient
 
-from app.api import crud
+from app.api import crud, summaries
 
 """
 docker-compose exec web pytest -k "unit" -n auto
@@ -24,6 +24,7 @@ def test_create_summary(test_app_with_db: TestClient, monkeypatch: pytest.Monkey
         return 1
 
     monkeypatch.setattr(crud, 'create', create_mock)
+    monkeypatch.setattr(summaries, 'generate_summary', lambda summary_id, url: None)
 
     response = test_app_with_db.post(
         '/summaries/', data=json.dumps({'url': 'https://foo.bar.com'})

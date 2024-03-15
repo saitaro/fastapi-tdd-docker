@@ -3,7 +3,7 @@ from app.models.tortoise import TextSummary
 
 
 async def create(payload: SummaryPayloadSchema) -> int:
-    summary = TextSummary(url=payload.url, summary='dummy summary')
+    summary = TextSummary(url=payload.url, summary='')
     await summary.save()
 
     return summary.id
