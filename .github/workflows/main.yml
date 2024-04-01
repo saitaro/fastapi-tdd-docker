@@ -91,7 +91,7 @@ jobs:
             ${{ env.IMAGE }}:latest
 
       - name: Install requirements
-        run: docker exec fastapi-tdd pip install black==22.1.0 blue==0.9.1 flake8==4.0.1 isort==5.13.2 pytest==7.4.4
+        run: docker exec fastapi-tdd-docker pip install black==22.1.0 blue==0.9.1 flake8==4.0.1 isort==5.13.2 pytest==7.4.4
       - name: pytest
         run: docker exec fastapi-tdd-docker pytest -k "not unit" -vvv
       - name: flake8
